@@ -3,11 +3,11 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCart } from "@/contexts/CartContext";
-import { formatPrice, createPaymentRequest, generateSignData, getPaymentUrl, generateOrderNumber } from "@/lib/paymentUtils";
+import { formatPrice, generateOrderNumber } from "@/lib/paymentUtils";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { PaymentResponse } from "@/types/product";
+import { supabase } from "@/integrations/supabase/client";
 
 type PaymentMethod = 'WECHAT' | 'ALIPAY' | 'UNIONPAY';
 
@@ -34,44 +34,34 @@ export default function Checkout() {
         ? items[0].name 
         : `${items.length} items`;
 
-      const paymentRequest = createPaymentRequest(
-        orderNo,
-        getTotal(),
-        subject,
-        selectedPayment
-      );
+      console.log('Initiating payment:', { orderNo, amount: getTotal(), subject, payType: selectedPayment });
 
-      // Generate signature
-      const signData = await generateSignData(paymentRequest as any);
-      
-      const requestWithSign = {
-        ...paymentRequest,
-        signData,
-      };
-
-      // Call payment API
-      const response = await fetch(getPaymentUrl(), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Call backend Edge Function to create payment
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: {
+          orderNo,
+          amount: getTotal(),
+          subject,
+          payType: selectedPayment,
         },
-        body: JSON.stringify(requestWithSign),
       });
 
-      const data: PaymentResponse = await response.json();
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message || 'Failed to process payment');
+      }
+
+      console.log('Payment response:', data);
 
       if (data.code === '00' && data.qrCode) {
         setQrCode(data.qrCode);
         toast.success("Payment QR code generated! Please scan to complete payment.");
-        
-        // In a real application, you would poll for payment status
-        // For now, we'll just show the QR code
       } else {
-        toast.error(data.msg || "Payment initiation failed");
+        throw new Error(data.msg || data.error || "Payment initiation failed");
       }
     } catch (error) {
       console.error("Payment error:", error);
-      toast.error("Failed to process payment. Please try again.");
+      toast.error(error instanceof Error ? error.message : "Failed to process payment. Please try again.");
     } finally {
       setIsProcessing(false);
     }
