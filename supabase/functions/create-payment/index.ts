@@ -37,9 +37,13 @@ function generateSignData(params: Record<string, string>): string {
 
   // Append md5Key
   const dataTemp = `${dataString}&key=${PAYMENT_CONFIG.md5Key}`;
+  
+  console.log('Signature data string:', dataTemp);
 
   // Calculate MD5 and convert to uppercase  
   const signData = md5(dataTemp);
+  
+  console.log('Generated signature:', signData);
   
   return signData;
 }
@@ -62,21 +66,22 @@ serve(async (req) => {
 
     console.log('Creating payment:', { orderNo, amount, subject, payType });
 
-    // Create payment request
-    const paymentRequest = {
-      version: "1.0.0",
-      service: "trade.scanPay",
+    // Create payment request - only include fields that should be signed
+    const paymentRequest: Record<string, string> = {
+      amount: amount.toString(),
       companyNo: PAYMENT_CONFIG.companyNo,
       customerNo: getCustomerNo(payType),
-      payType,
       mcc: PAYMENT_CONFIG.mcc,
       merOrderNo: orderNo,
-      amount: amount.toString(),
-      subject,
       notifyUrl: `${Deno.env.get('SUPABASE_URL')}/functions/v1/payment-webhook`,
+      payType,
+      service: "trade.scanPay",
+      subject,
       timeExpire: "30",
-      areaCode: "HK",
-    } as Record<string, string>;
+      version: "1.0.0",
+    };
+
+    console.log('Payment request before signing:', paymentRequest);
 
     // Generate signature
     const signData = generateSignData(paymentRequest as any);
