@@ -14,7 +14,7 @@ const PAYMENT_CONFIG = {
     wechatAlipay: "606034459212007",
     unionpay: "572034459212008",
   },
-  mcc: "8050",
+  mcc: "5921",
 };
 
 // MD5 hash function
