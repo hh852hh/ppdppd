@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const PAYMENT_CONFIG = {
   url: "https://www.powerpayhk.com/hkpay/native/service", // Production environment
-  md5Key: "94ed508f4bc242b88ddd0f0d644ebe7a",
+  md5Key: Deno.env.get('POWERPAY_MD5_KEY') || "94ed508f4bc242b88ddd0f0d644ebe7a",
   companyNo: "10088891",
   customerNo: {
     wechatAlipay: "606034459212007",
