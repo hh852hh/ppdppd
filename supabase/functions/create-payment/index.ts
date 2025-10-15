@@ -11,8 +11,8 @@ const PAYMENT_CONFIG = {
   md5Key: "94ed508f4bc242b88ddd0f0d644ebe7a",
   companyNo: "10088891",
   customerNo: {
-    wechatAlipay: "606034480502001",
-    unionpay: "572034480502002",
+    wechatAlipay: "606034459212007",
+    unionpay: "572034459212008",
   },
   mcc: "8050",
 };
