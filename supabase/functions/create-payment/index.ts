@@ -58,16 +58,16 @@ serve(async (req) => {
   }
 
   try {
-    const { orderNo, amount, subject, payType } = await req.json();
+    const { orderNo, amount, subject, payType, customerNo } = await req.json();
 
-    console.log('Creating payment:', { orderNo, amount, subject, payType });
+    console.log('Creating payment:', { orderNo, amount, subject, payType, customerNo });
 
     // Create payment request
     const paymentRequest = {
       version: "1.0.0",
       service: "trade.scanPay",
       companyNo: PAYMENT_CONFIG.companyNo,
-      customerNo: getCustomerNo(payType),
+      customerNo: customerNo || getCustomerNo(payType),
       payType,
       mcc: PAYMENT_CONFIG.mcc,
       merOrderNo: orderNo,
@@ -75,7 +75,8 @@ serve(async (req) => {
       subject,
       notifyUrl: `${Deno.env.get('SUPABASE_URL')}/functions/v1/payment-webhook`,
       timeExpire: "30",
-    };
+      areaCode: "HK",
+    } as Record<string, string>;
 
     // Generate signature
     const signData = generateSignData(paymentRequest as any);
@@ -104,16 +105,24 @@ serve(async (req) => {
       data = JSON.parse(responseText);
     } catch (e) {
       console.error('Failed to parse response:', e);
-      throw new Error('Invalid response from payment gateway');
+      return new Response(JSON.stringify({ code: '99', msg: 'Invalid response from payment gateway' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
     }
 
     if (data.code !== '00') {
       console.error('Payment API error:', data);
-      throw new Error(data.msg || 'Payment initiation failed');
+      // Return business error as 200 so frontend can show message gracefully
+      return new Response(JSON.stringify(data), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
     }
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
     });
 
   } catch (err) {

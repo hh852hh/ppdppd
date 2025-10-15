@@ -48,16 +48,18 @@ export default function Checkout() {
 
       if (error) {
         console.error('Edge function error:', error);
-        throw new Error(error.message || 'Failed to process payment');
+        toast.error(error.message || 'Payment service error. Please try again.');
+        return;
       }
 
       console.log('Payment response:', data);
 
-      if (data.code === '00' && data.qrCode) {
+      if (data?.code === '00' && data?.qrCode) {
         setQrCode(data.qrCode);
         toast.success("Payment QR code generated! Please scan to complete payment.");
       } else {
-        throw new Error(data.msg || data.error || "Payment initiation failed");
+        toast.error(data?.msg || data?.error || "Payment initiation failed");
+        return;
       }
     } catch (error) {
       console.error("Payment error:", error);
