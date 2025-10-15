@@ -10,10 +10,8 @@ const PAYMENT_CONFIG = {
   url: "http://test68.qtopay.cn/hkpay/native/service", // Test environment URL
   md5Key: "94ed508f4bc242b88ddd0f0d644ebe7a",
   companyNo: "10088891",
-  customerNo: {
-    wechatAlipay: "606034480502001",
-    unionpay: "572034480502002",
-  },
+  // Using test customerNo from documentation examples
+  customerNo: "20034585", // Test customer number from API docs
   mcc: "8050",
 };
 
@@ -44,11 +42,8 @@ function generateSignData(params: Record<string, string>): string {
   return signData;
 }
 
-function getCustomerNo(payType: string): string {
-  if (payType === 'UNIONPAY') {
-    return PAYMENT_CONFIG.customerNo.unionpay;
-  }
-  return PAYMENT_CONFIG.customerNo.wechatAlipay;
+function getCustomerNo(): string {
+  return PAYMENT_CONFIG.customerNo;
 }
 
 serve(async (req) => {
@@ -58,16 +53,16 @@ serve(async (req) => {
   }
 
   try {
-    const { orderNo, amount, subject, payType, customerNo } = await req.json();
+    const { orderNo, amount, subject, payType } = await req.json();
 
-    console.log('Creating payment:', { orderNo, amount, subject, payType, customerNo });
+    console.log('Creating payment:', { orderNo, amount, subject, payType });
 
     // Create payment request
     const paymentRequest = {
       version: "1.0.0",
       service: "trade.scanPay",
       companyNo: PAYMENT_CONFIG.companyNo,
-      customerNo: customerNo || getCustomerNo(payType),
+      customerNo: getCustomerNo(),
       payType,
       mcc: PAYMENT_CONFIG.mcc,
       merOrderNo: orderNo,
