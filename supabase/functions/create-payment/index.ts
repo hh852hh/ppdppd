@@ -64,7 +64,12 @@ serve(async (req) => {
   try {
     const { orderNo, amount, subject, payType } = await req.json();
 
-    console.log('Creating payment:', { orderNo, amount, subject, payType });
+    const xff = req.headers.get('x-forwarded-for') || '';
+    const realIp = xff.split(',')[0].trim() || '127.0.0.1';
+
+    const safeSubject = (subject || '').toString().slice(0, 32) || 'HK Shop Order';
+
+    console.log('Creating payment:', { orderNo, amount, subject: safeSubject, payType, realIp });
 
     // Create payment request - only include fields that should be signed
     const paymentRequest: Record<string, string> = {
@@ -76,9 +81,12 @@ serve(async (req) => {
       notifyUrl: `${Deno.env.get('SUPABASE_URL')}/functions/v1/payment-webhook`,
       payType,
       service: "trade.scanPay",
-      subject,
+      subject: safeSubject,
       timeExpire: "30",
       version: "1.0.0",
+      areaCode: "HK",
+      realIp,
+      desc: `Order ${orderNo}`,
     };
 
     console.log('Payment request before signing:', paymentRequest);
