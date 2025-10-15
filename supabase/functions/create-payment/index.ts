@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const PAYMENT_CONFIG = {
-  url: "http://test68.qtopay.cn/hkpay/native/service", // Test environment
+  url: "https://hkpay.qtopay.cn/hkpay/native/service", // Production environment
   md5Key: "94ed508f4bc242b88ddd0f0d644ebe7a",
   companyNo: "10088891",
   customerNo: {
