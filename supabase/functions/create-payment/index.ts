@@ -10,10 +10,7 @@ const PAYMENT_CONFIG = {
   url: "http://test68.qtopay.cn/hkpay/native/service", // Test environment
   md5Key: "94ed508f4bc242b88ddd0f0d644ebe7a",
   companyNo: "10088891",
-  customerNo: {
-    wechatAlipay: "606034480502001",
-    unionpay: "572034480502002",
-  },
+  customerNo: "20034585", // Test customer from documentation
   mcc: "8050",
 };
 
@@ -48,11 +45,8 @@ function generateSignData(params: Record<string, string>): string {
   return signData;
 }
 
-function getCustomerNo(payType: string): string {
-  if (payType === 'UNIONPAY') {
-    return PAYMENT_CONFIG.customerNo.unionpay;
-  }
-  return PAYMENT_CONFIG.customerNo.wechatAlipay;
+function getCustomerNo(): string {
+  return PAYMENT_CONFIG.customerNo;
 }
 
 serve(async (req) => {
@@ -70,7 +64,7 @@ serve(async (req) => {
     console.log('PAYMENT_CONFIG:', { 
       url: PAYMENT_CONFIG.url,
       companyNo: PAYMENT_CONFIG.companyNo,
-      customerNo: getCustomerNo(payType),
+      customerNo: getCustomerNo(),
       mcc: PAYMENT_CONFIG.mcc 
     });
 
@@ -78,7 +72,7 @@ serve(async (req) => {
     const paymentRequest: Record<string, string> = {
       amount: amount.toString(),
       companyNo: PAYMENT_CONFIG.companyNo,
-      customerNo: getCustomerNo(payType),
+      customerNo: getCustomerNo(),
       desc: safeSubject,
       mcc: PAYMENT_CONFIG.mcc,
       merOrderNo: orderNo,
