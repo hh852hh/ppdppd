@@ -67,23 +67,31 @@ serve(async (req) => {
     const safeSubject = (subject || '').toString().slice(0, 32) || 'HK Shop Order';
 
     console.log('Creating payment:', { orderNo, amount, subject: safeSubject, payType });
+    console.log('PAYMENT_CONFIG:', { 
+      url: PAYMENT_CONFIG.url,
+      companyNo: PAYMENT_CONFIG.companyNo,
+      customerNo: getCustomerNo(payType),
+      mcc: PAYMENT_CONFIG.mcc 
+    });
 
-    // Create payment request - only include fields that should be signed
+    // Create payment request matching API documentation example
     const paymentRequest: Record<string, string> = {
       amount: amount.toString(),
       companyNo: PAYMENT_CONFIG.companyNo,
       customerNo: getCustomerNo(payType),
+      desc: safeSubject,
       mcc: PAYMENT_CONFIG.mcc,
       merOrderNo: orderNo,
       notifyUrl: `${Deno.env.get('SUPABASE_URL')}/functions/v1/payment-webhook`,
       payType,
+      realIp: "127.0.0.1",
       service: "trade.scanPay",
       subject: safeSubject,
       timeExpire: "30",
       version: "1.0.0",
     };
 
-    console.log('Payment request before signing:', paymentRequest);
+    console.log('Payment request before signing:', JSON.stringify(paymentRequest, null, 2));
 
     // Generate signature
     const signData = generateSignData(paymentRequest as any);
@@ -105,23 +113,41 @@ serve(async (req) => {
     });
 
     const responseText = await response.text();
-    console.log('PowerPay API response:', responseText);
+    console.log('PowerPay API RAW response:', responseText);
+    console.log('PowerPay API response status:', response.status);
+    console.log('PowerPay API response headers:', JSON.stringify(Object.fromEntries(response.headers.entries())));
 
     let data;
     try {
       data = JSON.parse(responseText);
     } catch (e) {
       console.error('Failed to parse response:', e);
-      return new Response(JSON.stringify({ code: '99', msg: 'Invalid response from payment gateway' }), {
+      console.error('Response was:', responseText);
+      return new Response(JSON.stringify({ 
+        code: '99', 
+        msg: 'Invalid response from payment gateway',
+        rawResponse: responseText 
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });
     }
 
+    console.log('PowerPay API parsed response:', JSON.stringify(data, null, 2));
+
     if (data.code !== '00') {
-      console.error('Payment API error:', data);
+      console.error('Payment API error - code:', data.code);
+      console.error('Payment API error - msg:', data.msg);
+      console.error('Payment API full error response:', JSON.stringify(data, null, 2));
+      
       // Return business error as 200 so frontend can show message gracefully
-      return new Response(JSON.stringify(data), {
+      return new Response(JSON.stringify({
+        ...data,
+        debugInfo: {
+          requestSent: requestWithSign,
+          responseReceived: data
+        }
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });
