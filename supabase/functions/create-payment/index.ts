@@ -28,7 +28,7 @@ function generateSignData(params: Record<string, string>): string {
   // Filter out empty values and signData itself
   const filteredParams = Object.entries(params)
     .filter(([key, value]) => value !== '' && key !== 'signData')
-    .sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
+    .sort(([keyA], [keyB]) => (keyA < keyB ? -1 : keyA > keyB ? 1 : 0));
 
   // Create data string in key=value format
   const dataString = filteredParams
@@ -84,9 +84,6 @@ serve(async (req) => {
       subject: safeSubject,
       timeExpire: "30",
       version: "1.0.0",
-      areaCode: "HK",
-      realIp,
-      desc: `Order ${orderNo}`,
     };
 
     console.log('Payment request before signing:', paymentRequest);
