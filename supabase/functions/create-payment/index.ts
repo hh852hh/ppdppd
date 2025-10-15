@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { Md5 } from "https://deno.land/std@0.160.0/hash/md5.ts";
+import { Md5 } from "https://deno.land/std@0.119.0/hash/md5.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,7 +21,7 @@ const PAYMENT_CONFIG = {
 function md5(message: string): string {
   const hash = new Md5();
   hash.update(message);
-  return hash.toString().toUpperCase();
+  return hash.toString();
 }
 
 function generateSignData(params: Record<string, string>): string {
@@ -41,7 +41,7 @@ function generateSignData(params: Record<string, string>): string {
   console.log('Signature data string:', dataTemp);
 
   // Calculate MD5 and convert to uppercase  
-  const signData = md5(dataTemp);
+  const signData = md5(dataTemp).toUpperCase();
   
   console.log('Generated signature:', signData);
   
@@ -64,12 +64,9 @@ serve(async (req) => {
   try {
     const { orderNo, amount, subject, payType } = await req.json();
 
-    const xff = req.headers.get('x-forwarded-for') || '';
-    const realIp = xff.split(',')[0].trim() || '127.0.0.1';
-
     const safeSubject = (subject || '').toString().slice(0, 32) || 'HK Shop Order';
 
-    console.log('Creating payment:', { orderNo, amount, subject: safeSubject, payType, realIp });
+    console.log('Creating payment:', { orderNo, amount, subject: safeSubject, payType });
 
     // Create payment request - only include fields that should be signed
     const paymentRequest: Record<string, string> = {
