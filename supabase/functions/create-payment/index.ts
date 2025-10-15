@@ -7,11 +7,13 @@ const corsHeaders = {
 };
 
 const PAYMENT_CONFIG = {
-  url: "http://test68.qtopay.cn/hkpay/native/service", // Test environment URL
+  url: "https://www.powerpayhk.com/hkpay/native/service",
   md5Key: "94ed508f4bc242b88ddd0f0d644ebe7a",
   companyNo: "10088891",
-  // Using test customerNo from documentation examples
-  customerNo: "20034585", // Test customer number from API docs
+  customerNo: {
+    wechatAlipay: "606034480502001",
+    unionpay: "572034480502002",
+  },
   mcc: "8050",
 };
 
@@ -42,8 +44,11 @@ function generateSignData(params: Record<string, string>): string {
   return signData;
 }
 
-function getCustomerNo(): string {
-  return PAYMENT_CONFIG.customerNo;
+function getCustomerNo(payType: string): string {
+  if (payType === 'UNIONPAY') {
+    return PAYMENT_CONFIG.customerNo.unionpay;
+  }
+  return PAYMENT_CONFIG.customerNo.wechatAlipay;
 }
 
 serve(async (req) => {
@@ -62,7 +67,7 @@ serve(async (req) => {
       version: "1.0.0",
       service: "trade.scanPay",
       companyNo: PAYMENT_CONFIG.companyNo,
-      customerNo: getCustomerNo(),
+      customerNo: getCustomerNo(payType),
       payType,
       mcc: PAYMENT_CONFIG.mcc,
       merOrderNo: orderNo,
