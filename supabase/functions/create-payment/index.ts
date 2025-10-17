@@ -114,7 +114,7 @@ serve(async (req) => {
         idType: "HKID",
         email: "test@example.com",
       };
-      paymentRequest.BankCustomer = JSON.stringify(bankCustomer);
+      paymentRequest.bankCustomer = JSON.stringify(bankCustomer);
       // Clean any previously set flat fields if present
       delete (paymentRequest as any).bankCustomerName;
       delete (paymentRequest as any).bankCustomerMobile;
