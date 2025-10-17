@@ -60,7 +60,7 @@ function getService(payType: string): string {
     return 'trade.jsPay'; // JS payment for Alipay
   }
   if (payType === 'UNIONPAY') {
-    return 'secure.pay'; // Secure payment for UnionPay
+    return 'trade.h5Pay'; // H5 payment for UnionPay
   }
   return 'trade.scanPay'; // QR code payment for WeChat
 }
@@ -102,8 +102,8 @@ serve(async (req) => {
       version: "1.0.0",
     };
 
-    // Add frontUrl for secure.pay (UnionPay)
-    if (service === 'secure.pay') {
+    // Add frontUrl for h5Pay (UnionPay)
+    if (service === 'trade.h5Pay') {
       const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
       paymentRequest.frontUrl = `${supabaseUrl.replace('supabase.co', 'lovableproject.com')}/checkout`;
     }
