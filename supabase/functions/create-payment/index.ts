@@ -72,7 +72,7 @@ serve(async (req) => {
   }
 
   try {
-    const { orderNo, amount, subject, payType } = await req.json();
+    const { orderNo, amount, subject, payType, cardNo } = await req.json();
 
     const safeSubject = (subject || '').toString().slice(0, 32) || 'HK Shop Order';
 
@@ -108,9 +108,8 @@ serve(async (req) => {
       paymentRequest.frontUrl = `${supabaseUrl.replace('supabase.co', 'lovableproject.com')}/checkout`;
       // Enforce correct UnionPay channel as per docs
       paymentRequest.payType = 'UNIONPAY_INTL';
-      // cardNo is MANDATORY for secure.pay according to documentation
-      paymentRequest.cardNo = "8171999927660000"; // Test card number from documentation
-      // Note: bankCustomer is NOT in the secure.pay spec - only cardNo is used
+      // cardNo is MANDATORY for secure.pay - use provided cardNo or fallback to test card
+      paymentRequest.cardNo = cardNo || "8171999927660000";
     }
     
     console.log('Using service:', service, 'for payType:', payType);

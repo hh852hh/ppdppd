@@ -18,6 +18,7 @@ export default function Checkout() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const [cardNumber, setCardNumber] = useState<string>('');
 
   if (items.length === 0) {
     navigate("/cart");
@@ -25,6 +26,12 @@ export default function Checkout() {
   }
 
   const handlePayment = async () => {
+    // Validate card number for UnionPay
+    if (selectedPayment === 'UNIONPAY' && !cardNumber.trim()) {
+      toast.error('Please enter your card number');
+      return;
+    }
+
     setIsProcessing(true);
     try {
       const orderNo = generateOrderNumber();
@@ -43,6 +50,7 @@ export default function Checkout() {
           amount: getTotal(),
           subject,
           payType: selectedPayment,
+          ...(selectedPayment === 'UNIONPAY' && { cardNo: cardNumber.replace(/\s/g, '') }),
         },
       });
 
@@ -201,6 +209,23 @@ export default function Checkout() {
                     </button>
                   ))}
                 </div>
+                
+                {selectedPayment === 'UNIONPAY' && (
+                  <div className="mt-6">
+                    <label htmlFor="cardNumber" className="block text-sm font-medium mb-2">
+                      銀聯卡號 UnionPay Card Number
+                    </label>
+                    <input
+                      id="cardNumber"
+                      type="text"
+                      value={cardNumber}
+                      onChange={(e) => setCardNumber(e.target.value)}
+                      placeholder="請輸入您的銀聯卡號"
+                      className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent"
+                      maxLength={19}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
 
