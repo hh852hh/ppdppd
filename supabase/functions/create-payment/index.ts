@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Md5 } from "https://deno.land/std@0.119.0/hash/md5.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,14 +39,8 @@ function generateSignData(params: Record<string, string>): string {
   // Append md5Key
   const dataTemp = `${dataString}&key=${PAYMENT_CONFIG.md5Key}`;
   
-  // Redact secret key from logs for security
-  const redactedData = dataTemp.replace(/&key=[^&]+/, '&key=***REDACTED***');
-  console.log('Signature data string:', redactedData);
-
   // Calculate MD5 and convert to uppercase  
   const signData = md5(dataTemp).toUpperCase();
-  
-  console.log('Generated signature:', signData);
   
   return signData;
 }
@@ -67,6 +62,15 @@ function getService(payType: string): string {
   return 'trade.scanPay'; // QR code payment for WeChat
 }
 
+// Input validation schema
+const paymentSchema = z.object({
+  orderNo: z.string().regex(/^ORD\d{13}$/, 'Invalid order number format'),
+  amount: z.number().int().positive().max(10000000, 'Amount exceeds maximum'),
+  subject: z.string().trim().min(1).max(32),
+  payType: z.enum(['WECHAT', 'ALIPAY', 'UNIONPAY']),
+  cardNo: z.string().regex(/^\d{16,19}$/).optional()
+});
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -74,17 +78,27 @@ serve(async (req) => {
   }
 
   try {
-    const { orderNo, amount, subject, payType, cardNo } = await req.json();
+    const requestBody = await req.json();
+    
+    // Validate input
+    const validated = paymentSchema.parse(requestBody);
+    const { orderNo, amount, subject, payType, cardNo } = validated;
+    
+    // Validate cardNo is required for UNIONPAY
+    if (payType === 'UNIONPAY' && !cardNo) {
+      return new Response(JSON.stringify({
+        code: '99',
+        msg: 'Card number is required for UnionPay payments'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
 
-    const safeSubject = (subject || '').toString().slice(0, 32) || 'HK Shop Order';
-
-    console.log('Creating payment:', { orderNo, amount, subject: safeSubject, payType });
-    console.log('PAYMENT_CONFIG:', { 
-      url: PAYMENT_CONFIG.url,
-      companyNo: PAYMENT_CONFIG.companyNo,
-      customerNo: getCustomerNo(payType),
-      mcc: PAYMENT_CONFIG.mcc 
-    });
+    const safeSubject = subject.trim().slice(0, 32) || 'HK Shop Order';
+    
+    // Log only essential info
+    console.log('Processing payment:', { orderNo, payType });
 
     // Create payment request matching API documentation example
     const service = getService(payType);
@@ -116,13 +130,9 @@ serve(async (req) => {
       paymentRequest.frontUrl = `${supabaseUrl.replace('supabase.co', 'lovableproject.com')}/checkout`;
       // Enforce correct UnionPay channel as per docs
       paymentRequest.payType = 'UNIONPAY_INTL';
-      // cardNo is MANDATORY for secure.pay - use provided cardNo or fallback to test card
-      paymentRequest.cardNo = cardNo || "8171999927660000";
+      // cardNo is MANDATORY for secure.pay
+      paymentRequest.cardNo = cardNo!;
     }
-    
-    console.log('Using service:', service, 'for payType:', payType);
-
-    console.log('Payment request before signing:', JSON.stringify(paymentRequest, null, 2));
 
     // Generate signature
     const signData = generateSignData(paymentRequest as any);
@@ -131,8 +141,6 @@ serve(async (req) => {
       ...paymentRequest,
       signData,
     };
-
-    console.log('Calling PowerPay API with request:', requestWithSign);
 
     // Call payment API
     const response = await fetch(PAYMENT_CONFIG.url, {
@@ -144,41 +152,26 @@ serve(async (req) => {
     });
 
     const responseText = await response.text();
-    console.log('PowerPay API RAW response:', responseText);
-    console.log('PowerPay API response status:', response.status);
-    console.log('PowerPay API response headers:', JSON.stringify(Object.fromEntries(response.headers.entries())));
 
     let data;
     try {
       data = JSON.parse(responseText);
     } catch (e) {
-      console.error('Failed to parse response:', e);
-      console.error('Response was:', responseText);
+      console.error('Payment gateway response parse error');
       return new Response(JSON.stringify({ 
         code: '99', 
-        msg: 'Invalid response from payment gateway',
-        rawResponse: responseText 
+        msg: 'Invalid response from payment gateway'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });
     }
 
-    console.log('PowerPay API parsed response:', JSON.stringify(data, null, 2));
-
     if (data.code !== '00') {
-      console.error('Payment API error - code:', data.code);
-      console.error('Payment API error - msg:', data.msg);
-      console.error('Payment API full error response:', JSON.stringify(data, null, 2));
+      console.error('Payment error:', { code: data.code, orderNo });
       
       // Return business error as 200 so frontend can show message gracefully
-      return new Response(JSON.stringify({
-        ...data,
-        debugInfo: {
-          requestSent: requestWithSign,
-          responseReceived: data
-        }
-      }), {
+      return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });
@@ -205,10 +198,24 @@ serve(async (req) => {
 
   } catch (err) {
     const error = err as Error;
-    console.error('Error in create-payment function:', error);
+    
+    // Handle validation errors
+    if (error.name === 'ZodError') {
+      console.error('Payment validation failed');
+      return new Response(JSON.stringify({ 
+        code: '99',
+        msg: 'Invalid payment request',
+        errors: (error as any).issues
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    console.error('Payment processing error');
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Failed to process payment',
+        error: 'Failed to process payment',
         code: '99'
       }), 
       {

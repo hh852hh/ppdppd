@@ -2,3 +2,6 @@ project_id = "xnvwynfamjemyctiosuk"
 
 [functions.create-payment]
 verify_jwt = true
+
+[functions.payment-webhook]
+verify_jwt = false
