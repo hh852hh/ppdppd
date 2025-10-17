@@ -57,10 +57,10 @@ function getCustomerNo(payType: string): string {
 
 function getService(payType: string): string {
   if (payType === 'ALIPAY') {
-    return 'ali.wapPay'; // WAP payment for Alipay
+    return 'trade.wapPay'; // WAP payment for Alipay
   }
   if (payType === 'UNIONPAY') {
-    return 'union.gatewayPay'; // Gateway payment for UnionPay
+    return 'trade.gatewayPay'; // Gateway payment for UnionPay
   }
   return 'trade.scanPay'; // QR code payment for WeChat
 }
@@ -85,6 +85,9 @@ serve(async (req) => {
     });
 
     // Create payment request matching API documentation example
+    // Derive client IP from forwarded headers for WAP/Gateway flows
+    const clientIpHeader = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || '';
+    const clientIp = clientIpHeader.split(',')[0]?.trim() || '127.0.0.1';
     const service = getService(payType);
     const paymentRequest: Record<string, string> = {
       amount: amount.toString(),
@@ -95,7 +98,7 @@ serve(async (req) => {
       merOrderNo: orderNo,
       notifyUrl: `${Deno.env.get('SUPABASE_URL')}/functions/v1/payment-webhook`,
       payType,
-      realIp: "127.0.0.1",
+      realIp: clientIp,
       service,
       subject: safeSubject,
       timeExpire: "30",
