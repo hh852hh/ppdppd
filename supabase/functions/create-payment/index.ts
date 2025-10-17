@@ -85,9 +85,6 @@ serve(async (req) => {
     });
 
     // Create payment request matching API documentation example
-    // Derive client IP from forwarded headers for WAP/Gateway flows
-    const clientIpHeader = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || '';
-    const clientIp = clientIpHeader.split(',')[0]?.trim() || '127.0.0.1';
     const service = getService(payType);
     const paymentRequest: Record<string, string> = {
       amount: amount.toString(),
@@ -98,7 +95,7 @@ serve(async (req) => {
       merOrderNo: orderNo,
       notifyUrl: `${Deno.env.get('SUPABASE_URL')}/functions/v1/payment-webhook`,
       payType,
-      realIp: clientIp,
+      realIp: "127.0.0.1",
       service,
       subject: safeSubject,
       timeExpire: "30",
