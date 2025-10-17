@@ -60,7 +60,7 @@ function getService(payType: string): string {
     return 'trade.jsPay'; // JS payment for Alipay
   }
   if (payType === 'UNIONPAY') {
-    return 'trade.quickPay'; // Quick payment for UnionPay
+    return 'trade.creditCard.pay'; // Credit card payment for UnionPay
   }
   return 'trade.scanPay'; // QR code payment for WeChat
 }
