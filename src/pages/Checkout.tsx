@@ -77,21 +77,8 @@ export default function Checkout() {
           return;
         }
         
-        // For jsPay (Alipay), extract URL from payInfo
-        if (data?.payInfo) {
-          try {
-            const payInfo = JSON.parse(data.payInfo);
-            if (payInfo.aliPayUrl) {
-              window.location.href = payInfo.aliPayUrl;
-              return;
-            }
-          } catch (e) {
-            console.error('Failed to parse payInfo:', e);
-          }
-        }
-        
-        // For WAP and gateway payments, redirect to payment URL
-        if (data?.payUrl && (selectedPayment === 'ALIPAY' || selectedPayment === 'UNIONPAY')) {
+        // For trade.wapPay (Alipay), redirect to payment URL
+        if (data?.payUrl && selectedPayment === 'ALIPAY') {
           window.location.href = data.payUrl;
           return;
         }
