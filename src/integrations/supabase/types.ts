@@ -66,6 +66,7 @@ export type Database = {
           customer_phone: string | null
           id: string
           order_number: string
+          order_token: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
           payment_type: string
           powerpay_order_no: string | null
@@ -79,6 +80,7 @@ export type Database = {
           customer_phone?: string | null
           id?: string
           order_number: string
+          order_token?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
           payment_type: string
           powerpay_order_no?: string | null
@@ -92,6 +94,7 @@ export type Database = {
           customer_phone?: string | null
           id?: string
           order_number?: string
+          order_token?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
           payment_type?: string
           powerpay_order_no?: string | null

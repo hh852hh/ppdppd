@@ -38,7 +38,9 @@ function generateSignData(params: Record<string, string>): string {
   // Append md5Key
   const dataTemp = `${dataString}&key=${PAYMENT_CONFIG.md5Key}`;
   
-  console.log('Signature data string:', dataTemp);
+  // Redact secret key from logs for security
+  const redactedData = dataTemp.replace(/&key=[^&]+/, '&key=***REDACTED***');
+  console.log('Signature data string:', redactedData);
 
   // Calculate MD5 and convert to uppercase  
   const signData = md5(dataTemp).toUpperCase();
