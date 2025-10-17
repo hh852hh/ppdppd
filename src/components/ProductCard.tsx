@@ -27,7 +27,7 @@ export function ProductCard({ product }: ProductCardProps) {
         />
         {!product.inStock && (
           <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-            <span className="text-lg font-semibold">Out of Stock</span>
+            <span className="text-lg font-semibold">缺貨</span>
           </div>
         )}
       </div>
@@ -52,7 +52,7 @@ export function ProductCard({ product }: ProductCardProps) {
           disabled={!product.inStock}
         >
           <ShoppingCart className="mr-2 h-4 w-4" />
-          Add to Cart
+          加入購物車
         </Button>
       </CardFooter>
     </Card>

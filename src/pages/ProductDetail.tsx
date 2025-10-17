@@ -18,8 +18,8 @@ export default function ProductDetail() {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="container mx-auto px-4 py-20 text-center">
-          <h1 className="text-2xl font-bold mb-4">Product not found</h1>
-          <Button onClick={() => navigate("/")}>Back to Shop</Button>
+          <h1 className="text-2xl font-bold mb-4">找不到產品</h1>
+          <Button onClick={() => navigate("/")}>返回商店</Button>
         </div>
       </div>
     );
@@ -36,7 +36,7 @@ export default function ProductDetail() {
           className="mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Products
+          返回產品列表
         </Button>
 
         <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
@@ -76,12 +76,12 @@ export default function ProductDetail() {
                 disabled={!product.inStock}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
-                {product.inStock ? "Add to Cart & Checkout" : "Out of Stock"}
+                {product.inStock ? "加入購物車並結帳" : "缺貨"}
               </Button>
 
               {product.inStock && (
                 <p className="text-sm text-muted-foreground">
-                  ✓ In stock and ready to ship
+                  ✓ 有現貨，可立即出貨
                 </p>
               )}
             </div>

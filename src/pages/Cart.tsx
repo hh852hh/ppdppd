@@ -15,11 +15,11 @@ export default function Cart() {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="container mx-auto px-4 py-20 text-center">
-          <h2 className="text-3xl font-bold mb-4">Your cart is empty</h2>
+          <h2 className="text-3xl font-bold mb-4">您的購物車是空的</h2>
           <p className="text-muted-foreground mb-8">
-            Add some products to get started
+            添加一些產品開始購物
           </p>
-          <Button onClick={() => navigate("/")}>Continue Shopping</Button>
+          <Button onClick={() => navigate("/")}>繼續購物</Button>
         </div>
       </div>
     );
@@ -36,10 +36,10 @@ export default function Cart() {
           className="mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Continue Shopping
+          繼續購物
         </Button>
 
-        <h1 className="text-4xl font-bold mb-8">Shopping Cart</h1>
+        <h1 className="text-4xl font-bold mb-8">購物車</h1>
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
@@ -109,22 +109,22 @@ export default function Cart() {
           <div>
             <Card className="shadow-card sticky top-24">
               <CardContent className="p-6">
-                <h2 className="text-2xl font-bold mb-6">Order Summary</h2>
+                <h2 className="text-2xl font-bold mb-6">訂單摘要</h2>
                 
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between text-muted-foreground">
-                    <span>Subtotal</span>
+                    <span>小計</span>
                     <span>{formatPrice(getTotal())}</span>
                   </div>
                   
                   <div className="flex justify-between text-muted-foreground">
-                    <span>Shipping</span>
-                    <span>Free</span>
+                    <span>運費</span>
+                    <span>免費</span>
                   </div>
                   
                   <div className="border-t pt-4">
                     <div className="flex justify-between text-xl font-bold">
-                      <span>Total</span>
+                      <span>總計</span>
                       <span>{formatPrice(getTotal())}</span>
                     </div>
                   </div>
@@ -135,7 +135,7 @@ export default function Cart() {
                   size="lg"
                   onClick={() => navigate("/checkout")}
                 >
-                  Proceed to Checkout
+                  前往結帳
                 </Button>
               </CardContent>
             </Card>

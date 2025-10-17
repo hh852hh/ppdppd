@@ -94,9 +94,9 @@ export default function Checkout() {
   };
 
   const paymentMethods = [
-    { id: 'WECHAT' as PaymentMethod, name: 'WeChat Pay', icon: '💬' },
-    { id: 'ALIPAY' as PaymentMethod, name: 'Alipay', icon: '🅰️' },
-    { id: 'UNIONPAY' as PaymentMethod, name: 'UnionPay', icon: '🏦' },
+    { id: 'WECHAT' as PaymentMethod, name: '微信支付', icon: '💬' },
+    { id: 'ALIPAY' as PaymentMethod, name: '支付寶', icon: '🅰️' },
+    { id: 'UNIONPAY' as PaymentMethod, name: '銀聯', icon: '🏦' },
   ];
 
   if (qrCode) {
@@ -106,24 +106,24 @@ export default function Checkout() {
         <div className="container mx-auto px-4 py-12">
           <Card className="max-w-2xl mx-auto shadow-card">
             <CardHeader>
-              <CardTitle className="text-2xl text-center">Scan to Pay</CardTitle>
+              <CardTitle className="text-2xl text-center">掃碼支付</CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-6">
               <div className="bg-white p-8 rounded-lg inline-block">
                 <img 
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCode)}`}
-                  alt="Payment QR Code"
+                  alt="付款二維碼"
                   className="w-72 h-72"
                 />
               </div>
               
               <div>
-                <p className="text-lg font-semibold mb-2">Order Number: {orderNumber}</p>
+                <p className="text-lg font-semibold mb-2">訂單編號：{orderNumber}</p>
                 <p className="text-3xl font-bold text-accent mb-2">
                   {formatPrice(getTotal())}
                 </p>
                 <p className="text-muted-foreground">
-                  Please scan the QR code with your {paymentMethods.find(p => p.id === selectedPayment)?.name} app
+                  請使用您的{paymentMethods.find(p => p.id === selectedPayment)?.name}應用程式掃描二維碼
                 </p>
               </div>
 
@@ -135,16 +135,16 @@ export default function Checkout() {
                     setOrderNumber(null);
                   }}
                 >
-                  Try Another Method
+                  嘗試其他方式
                 </Button>
                 <Button
                   onClick={() => {
                     clearCart();
                     navigate("/");
-                    toast.success("Order completed! (Demo mode)");
+                    toast.success("訂單已完成！（演示模式）");
                   }}
                 >
-                  Complete Order (Demo)
+                  完成訂單（演示）
                 </Button>
               </div>
             </CardContent>
@@ -159,13 +159,13 @@ export default function Checkout() {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8">Checkout</h1>
+        <h1 className="text-4xl font-bold mb-8">結帳</h1>
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <Card className="shadow-card">
               <CardHeader>
-                <CardTitle>Payment Method</CardTitle>
+                <CardTitle>付款方式</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4">
@@ -192,7 +192,7 @@ export default function Checkout() {
 
             <Card className="shadow-card">
               <CardHeader>
-                <CardTitle>Order Items</CardTitle>
+                <CardTitle>訂單項目</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -207,7 +207,7 @@ export default function Checkout() {
                         <div>
                           <p className="font-medium">{item.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            Qty: {item.quantity}
+                            數量：{item.quantity}
                           </p>
                         </div>
                       </div>
@@ -224,22 +224,22 @@ export default function Checkout() {
           <div>
             <Card className="shadow-card sticky top-24">
               <CardContent className="p-6">
-                <h2 className="text-2xl font-bold mb-6">Order Total</h2>
+                <h2 className="text-2xl font-bold mb-6">訂單總計</h2>
                 
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="text-muted-foreground">小計</span>
                     <span>{formatPrice(getTotal())}</span>
                   </div>
                   
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Payment Fee</span>
-                    <span>Free</span>
+                    <span className="text-muted-foreground">付款手續費</span>
+                    <span>免費</span>
                   </div>
                   
                   <div className="border-t pt-4">
                     <div className="flex justify-between text-xl font-bold">
-                      <span>Total</span>
+                      <span>總計</span>
                       <span className="text-accent">{formatPrice(getTotal())}</span>
                     </div>
                   </div>
@@ -254,15 +254,15 @@ export default function Checkout() {
                   {isProcessing ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Processing...
+                      處理中...
                     </>
                   ) : (
-                    `Pay ${formatPrice(getTotal())}`
+                    `支付 ${formatPrice(getTotal())}`
                   )}
                 </Button>
 
                 <p className="text-xs text-muted-foreground text-center mt-4">
-                  Secured by PowerPay HK
+                  由 PowerPay HK 提供安全支付
                 </p>
               </CardContent>
             </Card>
