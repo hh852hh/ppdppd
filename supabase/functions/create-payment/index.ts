@@ -57,10 +57,10 @@ function getCustomerNo(payType: string): string {
 
 function getService(payType: string): string {
   if (payType === 'ALIPAY') {
-    return 'trade.wapPay'; // WAP payment for Alipay
+    return 'trade.microPay'; // Micro payment for Alipay
   }
   if (payType === 'UNIONPAY') {
-    return 'trade.gatewayPay'; // Gateway payment for UnionPay
+    return 'trade.quickPay'; // Quick payment for UnionPay
   }
   return 'trade.scanPay'; // QR code payment for WeChat
 }
