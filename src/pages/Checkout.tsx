@@ -14,7 +14,7 @@ type PaymentMethod = 'WECHAT' | 'ALIPAY' | 'UNIONPAY';
 export default function Checkout() {
   const { items, getTotal, clearCart } = useCart();
   const navigate = useNavigate();
-  const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>('WECHAT');
+  const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>('UNIONPAY');
   const [isProcessing, setIsProcessing] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
@@ -116,8 +116,8 @@ export default function Checkout() {
   };
 
   const paymentMethods = [
-    { id: 'WECHAT' as PaymentMethod, name: '微信支付', icon: '💬' },
-    { id: 'ALIPAY' as PaymentMethod, name: '支付寶', icon: '🅰️' },
+    // { id: 'WECHAT' as PaymentMethod, name: '微信支付', icon: '💬' },
+    // { id: 'ALIPAY' as PaymentMethod, name: '支付寶', icon: '🅰️' },
     { id: 'UNIONPAY' as PaymentMethod, name: '銀聯', icon: '🏦' },
   ];
 
