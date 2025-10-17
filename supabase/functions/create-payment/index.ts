@@ -57,7 +57,7 @@ function getCustomerNo(payType: string): string {
 
 function getService(payType: string): string {
   if (payType === 'ALIPAY') {
-    return 'trade.scanPay'; // QR code payment for Alipay
+    return 'trade.jsPay'; // JS payment for Alipay
   }
   if (payType === 'UNIONPAY') {
     return 'trade.quickPay'; // Quick payment for UnionPay
