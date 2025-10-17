@@ -68,7 +68,16 @@ const paymentSchema = z.object({
   amount: z.number().int().positive().max(10000000, 'Amount exceeds maximum'),
   subject: z.string().trim().min(1).max(32),
   payType: z.enum(['WECHAT', 'ALIPAY', 'UNIONPAY']),
-  cardNo: z.string().regex(/^\d{16,19}$/).optional()
+  cardNo: z.string().regex(/^\d{16,19}$/).optional().or(z.literal(''))
+}).refine((data) => {
+  // Validate that cardNo is provided and valid for UNIONPAY
+  if (data.payType === 'UNIONPAY') {
+    return data.cardNo && data.cardNo.length >= 16 && data.cardNo.length <= 19 && /^\d+$/.test(data.cardNo);
+  }
+  return true;
+}, {
+  message: 'Valid card number (16-19 digits) is required for UnionPay payments',
+  path: ['cardNo']
 });
 
 serve(async (req) => {
@@ -83,17 +92,6 @@ serve(async (req) => {
     // Validate input
     const validated = paymentSchema.parse(requestBody);
     const { orderNo, amount, subject, payType, cardNo } = validated;
-    
-    // Validate cardNo is required for UNIONPAY
-    if (payType === 'UNIONPAY' && !cardNo) {
-      return new Response(JSON.stringify({
-        code: '99',
-        msg: 'Card number is required for UnionPay payments'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      });
-    }
 
     const safeSubject = subject.trim().slice(0, 32) || 'HK Shop Order';
     
@@ -130,8 +128,10 @@ serve(async (req) => {
       paymentRequest.frontUrl = `${supabaseUrl.replace('supabase.co', 'lovableproject.com')}/checkout`;
       // Enforce correct UnionPay channel as per docs
       paymentRequest.payType = 'UNIONPAY_INTL';
-      // cardNo is MANDATORY for secure.pay
-      paymentRequest.cardNo = cardNo!;
+      // cardNo is validated to exist for UNIONPAY in the schema
+      if (cardNo) {
+        paymentRequest.cardNo = cardNo;
+      }
     }
 
     // Generate signature
