@@ -101,6 +101,12 @@ serve(async (req) => {
       timeExpire: "30",
       version: "1.0.0",
     };
+
+    // Add frontUrl for secure.pay (UnionPay)
+    if (service === 'secure.pay') {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+      paymentRequest.frontUrl = `${supabaseUrl.replace('supabase.co', 'lovableproject.com')}/checkout`;
+    }
     
     console.log('Using service:', service, 'for payType:', payType);
 
