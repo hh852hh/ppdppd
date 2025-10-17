@@ -102,6 +102,12 @@ serve(async (req) => {
       version: "1.0.0",
     };
 
+    // Add required fields for trade.wapPay (Alipay)
+    if (service === 'trade.wapPay') {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+      paymentRequest.frontUrl = `${supabaseUrl.replace('supabase.co', 'lovableproject.com')}/checkout`;
+    }
+
     // Add required fields for secure.pay (UnionPay)
     if (service === 'secure.pay') {
       const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
