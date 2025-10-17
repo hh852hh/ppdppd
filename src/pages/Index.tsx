@@ -1,10 +1,12 @@
 import { Header } from "@/components/Header";
 import { ProductCard } from "@/components/ProductCard";
-import { mockProducts } from "@/lib/mockProducts";
+import { useProducts } from "@/hooks/useProducts";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 
 const Index = () => {
+  const { data: products, isLoading } = useProducts();
+  
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -40,9 +42,19 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {mockProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {isLoading ? (
+              <div className="col-span-full flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : products && products.length > 0 ? (
+              products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                No products available
+              </div>
+            )}
           </div>
         </div>
       </section>
