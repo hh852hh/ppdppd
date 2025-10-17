@@ -57,7 +57,7 @@ function getCustomerNo(payType: string): string {
 
 function getService(payType: string): string {
   if (payType === 'ALIPAY') {
-    return 'trade.wapPay'; // WAP payment for Alipay (web/mobile browser)
+    return 'trade.jsPay'; // JS payment for Alipay (works on web via redirect)
   }
   if (payType === 'UNIONPAY') {
     return 'secure.pay'; // Secure payment for UnionPay

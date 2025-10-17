@@ -77,10 +77,23 @@ export default function Checkout() {
           return;
         }
         
-        // For trade.wapPay (Alipay), redirect to payment URL
-        if (data?.payUrl && selectedPayment === 'ALIPAY') {
-          window.location.href = data.payUrl;
-          return;
+        // For jsPay (Alipay), extract URL from payInfo or fallback to payUrl
+        if (selectedPayment === 'ALIPAY') {
+          try {
+            if (data?.payInfo) {
+              const payInfo = JSON.parse(data.payInfo);
+              if (payInfo.aliPayUrl) {
+                window.location.href = payInfo.aliPayUrl;
+                return;
+              }
+            }
+          } catch (e) {
+            console.error('Failed to parse payInfo:', e);
+          }
+          if (data?.payUrl) {
+            window.location.href = data.payUrl;
+            return;
+          }
         }
         
         // For QR code payments (WeChat)
