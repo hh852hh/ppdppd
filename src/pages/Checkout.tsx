@@ -117,7 +117,7 @@ export default function Checkout() {
 
   const paymentMethods = [
     // { id: 'WECHAT' as PaymentMethod, name: '微信支付', icon: '💬' },
-    // { id: 'ALIPAY' as PaymentMethod, name: '支付寶', icon: '🅰️' },
+    { id: 'ALIPAY' as PaymentMethod, name: '支付寶', icon: '🅰️' },
     { id: 'UNIONPAY' as PaymentMethod, name: '銀聯', icon: '🏦' },
   ];
 
