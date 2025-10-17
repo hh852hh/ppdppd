@@ -106,11 +106,20 @@ serve(async (req) => {
     if (service === 'secure.pay') {
       const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
       paymentRequest.frontUrl = `${supabaseUrl.replace('supabase.co', 'lovableproject.com')}/checkout`;
-      // Add bankCustomer information required for secure.pay
-      paymentRequest.bankCustomerName = "Test User";
-      paymentRequest.bankCustomerMobile = "85212345678";
-      paymentRequest.bankCustomerIdNo = "A123456(7)";
-      paymentRequest.bankCustomerEmail = "test@example.com";
+      // Send BankCustomer as JSON string as required by gateway
+      const bankCustomer = {
+        name: "Test User",
+        mobile: "85212345678",
+        idNo: "A123456(7)",
+        idType: "HKID",
+        email: "test@example.com",
+      };
+      paymentRequest.BankCustomer = JSON.stringify(bankCustomer);
+      // Clean any previously set flat fields if present
+      delete (paymentRequest as any).bankCustomerName;
+      delete (paymentRequest as any).bankCustomerMobile;
+      delete (paymentRequest as any).bankCustomerIdNo;
+      delete (paymentRequest as any).bankCustomerEmail;
     }
     
     console.log('Using service:', service, 'for payType:', payType);
