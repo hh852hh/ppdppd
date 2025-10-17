@@ -106,6 +106,8 @@ serve(async (req) => {
     if (service === 'secure.pay') {
       const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
       paymentRequest.frontUrl = `${supabaseUrl.replace('supabase.co', 'lovableproject.com')}/checkout`;
+      // Enforce correct UnionPay channel as per docs
+      paymentRequest.payType = 'UNIONPAY_INTL';
       // cardNo is MANDATORY for secure.pay according to documentation
       paymentRequest.cardNo = "8171999927660000"; // Test card number from documentation
       // Note: bankCustomer is NOT in the secure.pay spec - only cardNo is used
