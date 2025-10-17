@@ -54,9 +54,20 @@ export default function Checkout() {
 
       console.log('Payment response:', data);
 
-      if (data?.code === '00' && data?.qrCode) {
-        setQrCode(data.qrCode);
-        toast.success("Payment QR code generated! Please scan to complete payment.");
+      if (data?.code === '00') {
+        // For WAP and gateway payments, redirect to payment URL
+        if (data?.payUrl && (selectedPayment === 'ALIPAY' || selectedPayment === 'UNIONPAY')) {
+          window.location.href = data.payUrl;
+          return;
+        }
+        
+        // For QR code payments (WeChat)
+        if (data?.qrCode) {
+          setQrCode(data.qrCode);
+          toast.success("Payment QR code generated! Please scan to complete payment.");
+        } else {
+          toast.error("Payment URL not provided");
+        }
       } else {
         toast.error(data?.msg || data?.error || "Payment initiation failed");
         return;

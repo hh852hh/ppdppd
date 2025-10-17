@@ -55,6 +55,16 @@ function getCustomerNo(payType: string): string {
   return PAYMENT_CONFIG.customerNo.wechatAlipay;
 }
 
+function getService(payType: string): string {
+  if (payType === 'ALIPAY') {
+    return 'trade.wapPay'; // WAP payment for Alipay
+  }
+  if (payType === 'UNIONPAY') {
+    return 'trade.gatewayPay'; // Gateway payment for UnionPay
+  }
+  return 'trade.scanPay'; // QR code payment for WeChat
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -75,6 +85,7 @@ serve(async (req) => {
     });
 
     // Create payment request matching API documentation example
+    const service = getService(payType);
     const paymentRequest: Record<string, string> = {
       amount: amount.toString(),
       companyNo: PAYMENT_CONFIG.companyNo,
@@ -85,11 +96,13 @@ serve(async (req) => {
       notifyUrl: `${Deno.env.get('SUPABASE_URL')}/functions/v1/payment-webhook`,
       payType,
       realIp: "127.0.0.1",
-      service: "trade.scanPay",
+      service,
       subject: safeSubject,
       timeExpire: "30",
       version: "1.0.0",
     };
+    
+    console.log('Using service:', service, 'for payType:', payType);
 
     console.log('Payment request before signing:', JSON.stringify(paymentRequest, null, 2));
 
