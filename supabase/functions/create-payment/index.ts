@@ -177,6 +177,20 @@ serve(async (req) => {
       });
     }
 
+    // For secure.pay, rename 'data' field to 'html' to match expected response format
+    if (service === 'secure.pay' && data.data) {
+      const responseData = {
+        ...data,
+        html: data.data,
+      };
+      delete responseData.data;
+      
+      return new Response(JSON.stringify(responseData), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
+    }
+
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,

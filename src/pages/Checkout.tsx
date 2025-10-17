@@ -55,6 +55,20 @@ export default function Checkout() {
       console.log('Payment response:', data);
 
       if (data?.code === '00') {
+        // For secure.pay (UnionPay gateway), render HTML form
+        if (data?.html && selectedPayment === 'UNIONPAY') {
+          // Create a temporary div to hold the HTML and auto-submit the form
+          const div = document.createElement('div');
+          div.innerHTML = data.html;
+          document.body.appendChild(div);
+          // The HTML contains auto-submit script, but we can also trigger it manually
+          const form = div.querySelector('form');
+          if (form) {
+            form.submit();
+          }
+          return;
+        }
+        
         // For jsPay (Alipay), extract URL from payInfo
         if (data?.payInfo) {
           try {
