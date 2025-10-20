@@ -22,8 +22,16 @@ export function ProductCard({ product }: ProductCardProps) {
       >
         <img
           src={product.image}
-          alt={product.name}
+          alt={`${product.name} 電動輪椅產品圖`}
+          loading="lazy"
+          decoding="async"
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          onError={(e) => {
+            const img = e.currentTarget as HTMLImageElement;
+            img.onerror = null;
+            img.src = "/placeholder.svg";
+            img.alt = `${product.name} 電動輪椅產品圖（佔位圖）`;
+          }}
         />
         {!product.inStock && (
           <div className="absolute inset-0 bg-background/80 flex items-center justify-center">

@@ -53,8 +53,16 @@ export default function ProductDetail() {
           <div className="aspect-square overflow-hidden rounded-lg shadow-card">
             <img
               src={product.image}
-              alt={product.name}
+              alt={`${product.name} 電動輪椅產品圖`}
+              loading="lazy"
+              decoding="async"
               className="h-full w-full object-cover"
+              onError={(e) => {
+                const img = e.currentTarget as HTMLImageElement;
+                img.onerror = null;
+                img.src = "/placeholder.svg";
+                img.alt = `${product.name} 電動輪椅產品圖（佔位圖）`;
+              }}
             />
           </div>
 
