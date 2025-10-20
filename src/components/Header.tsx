@@ -41,7 +41,7 @@ export function Header() {
           onClick={() => navigate("/")}
           className="text-2xl font-bold gradient-accent bg-clip-text text-transparent hover:opacity-80 transition-opacity"
         >
-          HK Shop
+          MobilityPro HK
         </button>
         
         <div className="flex items-center gap-2">
