@@ -12,10 +12,10 @@ const PAYMENT_CONFIG = {
   md5Key: Deno.env.get('POWERPAY_MD5_KEY')!,
   companyNo: "10088891",
   customerNo: {
-    wechatAlipay: "606034459212007",
-    unionpay: "572034459212008",
+    wechatAlipay: "606034480502001",
+    unionpay: "572034480502002",
   },
-  mcc: "5921",
+  mcc: "8050",
 };
 
 // MD5 hash function
