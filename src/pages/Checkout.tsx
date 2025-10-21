@@ -161,10 +161,11 @@ export default function Checkout() {
                 </Button>
                 <Button
                   onClick={() => {
+                    const total = getTotal();
                     // Store cart items for display on success page
                     sessionStorage.setItem('completedOrderItems', JSON.stringify(items));
                     clearCart();
-                    navigate(`/payment-success?orderNumber=${orderNumber}&amount=${getTotal()}`);
+                    navigate(`/payment-success?orderNumber=${orderNumber ?? generateOrderNumber()}&amount=${total}`);
                   }}
                 >
                   完成訂單（演示）
@@ -307,9 +308,11 @@ export default function Checkout() {
                   size="sm"
                   className="w-full mt-2 opacity-0 hover:opacity-100 transition-opacity"
                   onClick={() => {
+                    const total = getTotal();
                     const testOrderNo = generateOrderNumber();
+                    sessionStorage.setItem('completedOrderItems', JSON.stringify(items));
                     clearCart();
-                    navigate(`/payment-success?orderNumber=${testOrderNo}&amount=${getTotal()}`);
+                    navigate(`/payment-success?orderNumber=${testOrderNo}&amount=${total}`);
                     toast.success("測試付款完成");
                   }}
                 >
