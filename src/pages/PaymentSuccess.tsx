@@ -8,9 +8,11 @@ import { CheckCircle2, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface OrderItem {
-  product_name: string;
+  product_name?: string;
+  name?: string;
   quantity: number;
-  price_at_time: number;
+  price_at_time?: number;
+  price?: number;
 }
 
 export default function PaymentSuccess() {
@@ -30,14 +32,29 @@ export default function PaymentSuccess() {
 
     const fetchOrderItems = async () => {
       try {
-        // First get the order ID from order number
+        // First check if we have cart items in sessionStorage (for demo orders)
+        const storedItems = sessionStorage.getItem('completedOrderItems');
+        if (storedItems) {
+          const items = JSON.parse(storedItems);
+          setOrderItems(items);
+          sessionStorage.removeItem('completedOrderItems');
+          setLoading(false);
+          return;
+        }
+
+        // Otherwise fetch from database
         const { data: order, error: orderError } = await supabase
           .from('orders')
           .select('id')
           .eq('order_number', orderNumber)
-          .single();
+          .maybeSingle();
 
         if (orderError) throw orderError;
+        
+        if (!order) {
+          setLoading(false);
+          return;
+        }
 
         // Then get the order items
         const { data: items, error: itemsError } = await supabase
@@ -108,27 +125,32 @@ export default function PaymentSuccess() {
                   </div>
                   
                   <div className="space-y-3">
-                    {orderItems.map((item, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between items-center py-2 border-b last:border-b-0"
-                      >
-                        <div className="flex-1">
-                          <p className="font-medium">{item.product_name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            數量: {item.quantity}
-                          </p>
+                    {orderItems.map((item, index) => {
+                      const productName = item.product_name || item.name || '產品';
+                      const price = item.price_at_time || item.price || 0;
+                      
+                      return (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center py-2 border-b last:border-b-0"
+                        >
+                          <div className="flex-1">
+                            <p className="font-medium">{productName}</p>
+                            <p className="text-sm text-muted-foreground">
+                              數量: {item.quantity}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold">
+                              {formatPrice(price * item.quantity)}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {formatPrice(price)} × {item.quantity}
+                            </p>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold">
-                            {formatPrice(item.price_at_time * item.quantity)}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {formatPrice(item.price_at_time)} × {item.quantity}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}

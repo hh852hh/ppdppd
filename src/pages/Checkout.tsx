@@ -161,6 +161,8 @@ export default function Checkout() {
                 </Button>
                 <Button
                   onClick={() => {
+                    // Store cart items for display on success page
+                    sessionStorage.setItem('completedOrderItems', JSON.stringify(items));
                     clearCart();
                     navigate(`/payment-success?orderNumber=${orderNumber}&amount=${getTotal()}`);
                   }}
