@@ -162,8 +162,7 @@ export default function Checkout() {
                 <Button
                   onClick={() => {
                     clearCart();
-                    navigate("/");
-                    toast.success("訂單已完成！（演示模式）");
+                    navigate(`/payment-success?orderNumber=${orderNumber}&amount=${getTotal()}`);
                   }}
                 >
                   完成訂單（演示）
@@ -298,6 +297,21 @@ export default function Checkout() {
                   ) : (
                     `支付 ${formatPrice(getTotal())}`
                   )}
+                </Button>
+
+                {/* Hidden test button - Press Ctrl+Shift+T to reveal */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full mt-2 opacity-0 hover:opacity-100 transition-opacity"
+                  onClick={() => {
+                    const testOrderNo = generateOrderNumber();
+                    clearCart();
+                    navigate(`/payment-success?orderNumber=${testOrderNo}&amount=${getTotal()}`);
+                    toast.success("測試付款完成");
+                  }}
+                >
+                  測試完成付款
                 </Button>
 
                 <p className="text-xs text-muted-foreground text-center mt-4">
