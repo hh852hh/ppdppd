@@ -1,14 +1,23 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatPrice } from "@/lib/paymentUtils";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Package } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface OrderItem {
+  product_name: string;
+  quantity: number;
+  price_at_time: number;
+}
 
 export default function PaymentSuccess() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const orderNumber = searchParams.get("orderNumber");
   const amount = searchParams.get("amount");
@@ -16,7 +25,37 @@ export default function PaymentSuccess() {
   useEffect(() => {
     if (!orderNumber || !amount) {
       navigate("/");
+      return;
     }
+
+    const fetchOrderItems = async () => {
+      try {
+        // First get the order ID from order number
+        const { data: order, error: orderError } = await supabase
+          .from('orders')
+          .select('id')
+          .eq('order_number', orderNumber)
+          .single();
+
+        if (orderError) throw orderError;
+
+        // Then get the order items
+        const { data: items, error: itemsError } = await supabase
+          .from('order_items')
+          .select('product_name, quantity, price_at_time')
+          .eq('order_id', order.id);
+
+        if (itemsError) throw itemsError;
+
+        setOrderItems(items || []);
+      } catch (error) {
+        console.error('Error fetching order items:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrderItems();
   }, [orderNumber, amount, navigate]);
 
   if (!orderNumber || !amount) {
@@ -59,6 +98,40 @@ export default function PaymentSuccess() {
                   </div>
                 </div>
               </div>
+
+              {/* Order Items Section */}
+              {!loading && orderItems.length > 0 && (
+                <div className="bg-card border rounded-lg p-6 space-y-4">
+                  <div className="flex items-center gap-2 text-lg font-semibold">
+                    <Package className="w-5 h-5" />
+                    <span>訂購項目</span>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {orderItems.map((item, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center py-2 border-b last:border-b-0"
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium">{item.product_name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            數量: {item.quantity}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">
+                            {formatPrice(item.price_at_time * item.quantity)}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {formatPrice(item.price_at_time)} × {item.quantity}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               <p className="text-muted-foreground">
                 您的訂單已確認並正在處理中。<br />
