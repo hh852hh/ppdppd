@@ -12,8 +12,14 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { formatPrice } from "@/lib/paymentUtils";
-import { Loader2, ShieldAlert } from "lucide-react";
+import { Loader2, ShieldAlert, Package } from "lucide-react";
 import { toast } from "sonner";
 
 interface Order {
@@ -27,11 +33,21 @@ interface Order {
   created_at: string;
 }
 
+interface OrderItem {
+  id: string;
+  product_name: string;
+  quantity: number;
+  price_at_time: number;
+}
+
 export default function AdminOrders() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [loadingItems, setLoadingItems] = useState(false);
 
   useEffect(() => {
     checkAdminAndFetchOrders();
@@ -93,6 +109,31 @@ export default function AdminOrders() {
     }
   };
 
+  const handleOrderClick = async (order: Order) => {
+    setSelectedOrder(order);
+    setLoadingItems(true);
+    
+    try {
+      const { data, error } = await supabase
+        .from('order_items')
+        .select('*')
+        .eq('order_id', order.id);
+
+      if (error) {
+        console.error("Error fetching order items:", error);
+        toast.error("獲取訂單詳情失敗");
+        return;
+      }
+
+      setOrderItems(data || []);
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("發生錯誤");
+    } finally {
+      setLoadingItems(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -147,7 +188,11 @@ export default function AdminOrders() {
                   </TableHeader>
                   <TableBody>
                     {orders.map((order) => (
-                      <TableRow key={order.id}>
+                      <TableRow 
+                        key={order.id}
+                        className="cursor-pointer hover:bg-muted/50 transition-colors"
+                        onClick={() => handleOrderClick(order)}
+                      >
                         <TableCell className="font-medium">
                           {order.order_number}
                         </TableCell>
@@ -178,6 +223,94 @@ export default function AdminOrders() {
           </CardContent>
         </Card>
       </main>
+
+      <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">訂單詳情</DialogTitle>
+          </DialogHeader>
+          
+          {selectedOrder && (
+            <div className="space-y-6">
+              {/* Order Information */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+                <div>
+                  <p className="text-sm text-muted-foreground">訂單編號</p>
+                  <p className="font-semibold">{selectedOrder.order_number}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">總金額</p>
+                  <p className="font-semibold text-lg">{formatPrice(selectedOrder.total_amount)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">付款方式</p>
+                  <p className="font-semibold capitalize">{selectedOrder.payment_type}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">狀態</p>
+                  <Badge variant="default" className="bg-green-600">已付款</Badge>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">客戶郵箱</p>
+                  <p className="font-medium">{selectedOrder.customer_email || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">客戶電話</p>
+                  <p className="font-medium">{selectedOrder.customer_phone || "-"}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-sm text-muted-foreground">訂單時間</p>
+                  <p className="font-medium">
+                    {new Date(selectedOrder.created_at).toLocaleString('zh-HK', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Order Items */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <Package className="h-5 w-5" />
+                  <h3 className="text-lg font-semibold">訂單商品</h3>
+                </div>
+                
+                {loadingItems ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : orderItems.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">暫無商品資訊</p>
+                ) : (
+                  <div className="space-y-3">
+                    {orderItems.map((item) => (
+                      <div 
+                        key={item.id} 
+                        className="flex justify-between items-center p-4 bg-muted/30 rounded-lg"
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium">{item.product_name}</p>
+                          <p className="text-sm text-muted-foreground">數量: {item.quantity}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">{formatPrice(item.price_at_time)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            小計: {formatPrice(item.price_at_time * item.quantity)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
