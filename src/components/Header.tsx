@@ -1,4 +1,4 @@
-import { ShoppingCart, LogIn, LogOut, User } from "lucide-react";
+import { ShoppingCart, LogIn, LogOut, User, Shield } from "lucide-react";
 import { Button } from "./ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { Badge } from "./ui/badge";
@@ -13,20 +13,40 @@ export function Header() {
   const navigate = useNavigate();
   const itemCount = getItemCount();
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        checkAdminRole(session.user.id);
+      }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        checkAdminRole(session.user.id);
+      } else {
+        setIsAdmin(false);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const checkAdminRole = async (userId: string) => {
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    
+    setIsAdmin(!!data);
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -47,6 +67,17 @@ export function Header() {
         <div className="flex items-center gap-2">
           {user ? (
             <>
+              {isAdmin && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/admin/orders")}
+                  className="gap-2"
+                >
+                  <Shield className="h-4 w-4" />
+                  <span className="hidden sm:inline">訂單管理</span>
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
