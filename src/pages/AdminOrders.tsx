@@ -49,6 +49,11 @@ export default function AdminOrders() {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loadingItems, setLoadingItems] = useState(false);
 
+  // Admin view: show amounts as raw integers from backend (no cents conversion)
+  const formatOrderAmount = (amount: number) => {
+    return amount.toLocaleString('en', { useGrouping: false });
+  };
+
   useEffect(() => {
     checkAdminAndFetchOrders();
   }, []);
@@ -196,7 +201,7 @@ export default function AdminOrders() {
                         <TableCell className="font-medium">
                           {order.order_number}
                         </TableCell>
-                        <TableCell>{formatPrice(order.total_amount)}</TableCell>
+                        <TableCell>{formatOrderAmount(order.total_amount)}</TableCell>
                         <TableCell className="capitalize">{order.payment_type}</TableCell>
                         <TableCell>{order.customer_email || "-"}</TableCell>
                         <TableCell>{order.customer_phone || "-"}</TableCell>
@@ -240,7 +245,7 @@ export default function AdminOrders() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">總金額</p>
-                  <p className="font-semibold text-lg">{formatPrice(selectedOrder.total_amount)}</p>
+                  <p className="font-semibold text-lg">{formatOrderAmount(selectedOrder.total_amount)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">付款方式</p>
