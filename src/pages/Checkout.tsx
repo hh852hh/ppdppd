@@ -212,6 +212,7 @@ export default function Checkout() {
                   ))}
                 </div>
                 
+                {/* UnionPay card number input hidden
                 {selectedPayment === 'UNIONPAY' && (
                   <div className="mt-6">
                     <label htmlFor="cardNumber" className="block text-sm font-medium mb-2">
@@ -228,6 +229,7 @@ export default function Checkout() {
                     />
                   </div>
                 )}
+                */}
               </CardContent>
             </Card>
 
